@@ -29,12 +29,32 @@ def get_lang_dict(repos):
 		lang_dict.append(response.json())
 	return lang_dict
 
+def accumulate_languages(language_dictionaries):
+	""" Calculate total size for each lang """
+	accumulated = defaultdict(int)
+	total =0
+	for language_dict in language_dictionaries:
+		for lang_name, no_bytes in language_dict.iteritems():
+			accumulated[lang_name] +=no_bytes
+			total += no_bytes
+	return accumulated, total
+
+
 def main():
 	"""Main"""
 	repos=get_repos(sys.argv[1])
 	logging.debug("In main: get repo for argv[1]")
 	lang_dicts= get_lang_dict(repos)
-	print lang_dicts
+	#print lang_dicts
 	#print repos[1]
+	lang_total, total_bytes = accumulate_languages(lang_dicts)
+
+	print lang_total, total_bytes
+	sorted_lang_totals = sorted(lang_total.iteritems(), key=operator.itemgetter(1), reverse=True)
+
+	print sorted_lang_totals
+	for lang_name, no_bytes in sorted_lang_totals:
+		percent = 100 * no_bytes / total_bytes
+		print "{}: {:.2f}%".format(lang_name, percent)
 
 if __name__ == "__main__": main()
